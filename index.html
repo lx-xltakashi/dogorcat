@@ -640,6 +640,7 @@
     }
 
     function restartGame() {
+      loadBestScore();
       document.getElementById('overlay').classList.remove('show');
       score = 0;
       timeLimit = BASE_TIME;
