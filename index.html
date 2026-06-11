@@ -17,6 +17,185 @@
       overflow: hidden;
     }
 
+    /* ── Top Page ── */
+    #top-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      width: 100%;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    #top-page.hidden { display: none; }
+
+    #top-logo {
+      font-size: 5rem;
+      margin-bottom: 16px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    #top-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    #top-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 48px;
+      line-height: 1.6;
+    }
+
+    #top-rules {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 24px 28px;
+      max-width: 360px;
+      width: 100%;
+      margin-bottom: 48px;
+      text-align: left;
+    }
+
+    #top-rules h2 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    #top-rules ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #top-rules li {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    #top-rules li .icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Best Score ── */
+    #best-score-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,213,102,0.1);
+      border: 1px solid rgba(255,213,102,0.3);
+      border-radius: 16px;
+      padding: 14px 24px;
+      max-width: 360px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+
+    #best-score-wrap .trophy { font-size: 1.6rem; }
+
+    #best-score-wrap .label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    #best-score-wrap .value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #ffd166;
+      line-height: 1;
+    }
+
+    #best-score-wrap.no-record { display: none; }
+
+    #start-btn {
+      width: 100%;
+      max-width: 360px;
+      padding: 22px;
+      background: linear-gradient(135deg, #06d6a0, #118ab2);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 1.3rem;
+      font-weight: 900;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      box-shadow: 0 10px 32px rgba(6,214,160,0.4);
+      transition: transform 0.12s, opacity 0.12s;
+    }
+
+    #start-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+    /* ── Countdown Overlay ── */
+    #countdown {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+
+    #countdown.show { display: flex; }
+
+    #countdown-number {
+      font-size: 10rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(6,214,160,0.6);
+      animation: pop 0.4s ease-out;
+    }
+
+    #countdown-number.start-text {
+      font-size: 4rem;
+      letter-spacing: 0.1em;
+      color: #06d6a0;
+      text-shadow: 0 0 60px rgba(6,214,160,0.8);
+    }
+
+    @keyframes pop {
+      0%   { transform: scale(1.6); opacity: 0; }
+      60%  { transform: scale(0.95); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Game Screen ── */
+    #game-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      min-height: 100dvh;
+    }
+
+    #game-screen.show { display: flex; }
+
     /* ── Header ── */
     #header {
       width: 100%;
@@ -150,7 +329,7 @@
 
     .answer-btn:disabled { opacity: 0.5; pointer-events: none; }
 
-    /* ── Overlay ── */
+    /* ── Game Over Overlay ── */
     #overlay {
       display: none;
       position: fixed;
@@ -224,28 +403,65 @@
 </head>
 <body>
 
-  <div id="header">
-    <h1>🐾 犬か猫か</h1>
-    <div id="score-pill">スコア <span id="score">0</span></div>
+  <!-- ── Top Page ── -->
+  <div id="top-page">
+    <div id="top-logo">🐾</div>
+    <h1 id="top-title">犬か猫か</h1>
+    <p id="top-subtitle">写真を見て、犬か猫かを当てよう！<br>制限時間内に答えよう</p>
+
+    <div id="top-rules">
+      <h2>遊び方</h2>
+      <ul>
+        <li><span class="icon">📷</span>動物の写真が表示されます</li>
+        <li><span class="icon">⏱️</span>制限時間内に犬か猫かタップ</li>
+        <li><span class="icon">✅</span>正解するたびに制限時間が短くなる</li>
+        <li><span class="icon">❌</span>不正解か時間切れでゲームオーバー</li>
+      </ul>
+    </div>
+
+    <div id="best-score-wrap" class="no-record">
+      <span class="trophy">🏆</span>
+      <div>
+        <div class="label">ベストスコア</div>
+        <div class="value" id="best-score-display">0</div>
+      </div>
+    </div>
+
+    <button id="start-btn" onclick="startCountdown()">スタート</button>
   </div>
 
-  <div id="timer-wrap">
-    <div id="timer-track"><div id="timer-bar"></div></div>
-    <div id="timer-label"><span id="timer-text">5.0</span>s</div>
+  <!-- ── Countdown ── -->
+  <div id="countdown">
+    <div id="countdown-number">3</div>
   </div>
 
-  <div id="card">
-    <img id="quiz-img" src="" alt="クイズ画像">
+  <!-- ── Game Screen ── -->
+  <div id="game-screen">
+
+    <div id="header">
+      <h1>🐾 犬か猫か</h1>
+      <div id="score-pill">スコア <span id="score">0</span></div>
+    </div>
+
+    <div id="timer-wrap">
+      <div id="timer-track"><div id="timer-bar"></div></div>
+      <div id="timer-label"><span id="timer-text">5.0</span>s</div>
+    </div>
+
+    <div id="card">
+      <img id="quiz-img" src="" alt="クイズ画像">
+    </div>
+
+    <div id="spacer"></div>
+
+    <div id="btn-area">
+      <button class="answer-btn" id="btn-dog" onclick="answer('dog')">🐶 犬</button>
+      <button class="answer-btn" id="btn-cat" onclick="answer('cat')">🐱 猫</button>
+    </div>
+
   </div>
 
-  <div id="spacer"></div>
-
-  <div id="btn-area">
-    <button class="answer-btn" id="btn-dog" onclick="answer('dog')">🐶 犬</button>
-    <button class="answer-btn" id="btn-cat" onclick="answer('cat')">🐱 猫</button>
-  </div>
-
-  <!-- overlay -->
+  <!-- ── Game Over Overlay ── -->
   <div id="overlay">
     <div id="overlay-box">
       <div id="overlay-emoji"></div>
@@ -283,14 +499,31 @@
     let currentImage = null;
     let score = 0;
 
-    // Timer state
-    const BASE_TIME  = 5.0;   // seconds at start
-    const MIN_TIME   = 1.0;   // floor
-    const STEP       = 0.1;   // reduction per correct answer
+    const BEST_KEY = 'dogorcat_best';
+
+    function loadBestScore() {
+      const best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10);
+      const wrap = document.getElementById('best-score-wrap');
+      if (best > 0) {
+        document.getElementById('best-score-display').textContent = best;
+        wrap.classList.remove('no-record');
+      } else {
+        wrap.classList.add('no-record');
+      }
+    }
+
+    function saveBestScore(s) {
+      const prev = parseInt(localStorage.getItem(BEST_KEY) || '0', 10);
+      if (s > prev) localStorage.setItem(BEST_KEY, s);
+    }
+
+    const BASE_TIME  = 5.0;
+    const MIN_TIME   = 1.0;
+    const STEP       = 0.1;
     let timeLimit    = BASE_TIME;
     let timeLeft     = BASE_TIME;
     let timerHandle  = null;
-    const TICK       = 50;    // ms
+    const TICK       = 50;
 
     const timerBar   = document.getElementById('timer-bar');
     const timerText  = document.getElementById('timer-text');
@@ -302,6 +535,49 @@
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
+    }
+
+    loadBestScore();
+
+    function startCountdown() {
+      document.getElementById('top-page').classList.add('hidden');
+      const cdEl = document.getElementById('countdown');
+      const numEl = document.getElementById('countdown-number');
+      cdEl.classList.add('show');
+
+      const steps = ['3', '2', '1', 'START'];
+      let i = 0;
+
+      function showStep() {
+        numEl.classList.remove('pop-anim', 'start-text');
+        void numEl.offsetWidth; // reflow to restart animation
+        numEl.textContent = steps[i];
+        numEl.classList.add('pop-anim');
+        if (steps[i] === 'START') {
+          numEl.classList.add('start-text');
+        }
+
+        i++;
+        if (i < steps.length) {
+          setTimeout(showStep, 900);
+        } else {
+          setTimeout(() => {
+            cdEl.classList.remove('show');
+            beginGame();
+          }, 700);
+        }
+      }
+
+      showStep();
+    }
+
+    function beginGame() {
+      document.getElementById('game-screen').classList.add('show');
+      score = 0;
+      timeLimit = BASE_TIME;
+      document.getElementById('score').textContent = 0;
+      queue = [];
+      loadNext();
     }
 
     function startTimer() {
@@ -355,6 +631,7 @@
     }
 
     function showGameOver(reason) {
+      saveBestScore(score);
       document.getElementById('overlay-emoji').textContent  = reason === 'timeout' ? '⏰' : '😿';
       document.getElementById('overlay-title').textContent  = 'ゲームオーバー';
       document.getElementById('overlay-reason').textContent = reason === 'timeout' ? '時間切れ！' : '不正解…';
@@ -363,15 +640,41 @@
     }
 
     function restartGame() {
+      document.getElementById('overlay').classList.remove('show');
       score = 0;
       timeLimit = BASE_TIME;
       document.getElementById('score').textContent = 0;
-      document.getElementById('overlay').classList.remove('show');
       queue = [];
-      loadNext();
-    }
 
-    loadNext();
+      // Show countdown again
+      const cdEl = document.getElementById('countdown');
+      const numEl = document.getElementById('countdown-number');
+      cdEl.classList.add('show');
+
+      const steps = ['3', '2', '1', 'START'];
+      let i = 0;
+
+      function showStep() {
+        numEl.classList.remove('start-text');
+        void numEl.offsetWidth;
+        numEl.textContent = steps[i];
+        if (steps[i] === 'START') {
+          numEl.classList.add('start-text');
+        }
+
+        i++;
+        if (i < steps.length) {
+          setTimeout(showStep, 900);
+        } else {
+          setTimeout(() => {
+            cdEl.classList.remove('show');
+            loadNext();
+          }, 700);
+        }
+      }
+
+      showStep();
+    }
   </script>
 </body>
 </html>
