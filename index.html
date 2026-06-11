@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>犬か猫か当てゲーム</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    #header {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #header h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+
+    #score-pill {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    #score-pill span { color: #ffd166; }
+
+    /* ── Timer bar ── */
+    #timer-wrap {
+      width: 100%;
+      max-width: 480px;
+      padding: 14px 24px 0;
+    }
+
+    #timer-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    #timer-bar {
+      height: 100%;
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #06d6a0, #118ab2);
+      transform-origin: left;
+      transition: background 0.4s;
+    }
+
+    #timer-bar.warn  { background: linear-gradient(90deg, #ffd166, #ef476f); }
+
+    #timer-label {
+      text-align: right;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+
+    /* ── Image card ── */
+    #card {
+      width: calc(100% - 48px);
+      max-width: 432px;
+      margin-top: 16px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+
+    #card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ── Spacer pushes buttons to bottom ── */
+    #spacer { flex: 1; }
+
+    /* ── Buttons ── */
+    #btn-area {
+      width: 100%;
+      max-width: 480px;
+      padding: 16px 24px 40px;
+      display: flex;
+      gap: 14px;
+    }
+
+    .answer-btn {
+      flex: 1;
+      padding: 20px 12px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.12s, box-shadow 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .answer-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.15s;
+    }
+
+    .answer-btn:active { transform: scale(0.95); }
+    .answer-btn:active::after { background: rgba(255,255,255,0.15); }
+
+    #btn-dog {
+      background: linear-gradient(135deg, #f7b733, #fc4a1a);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(252,74,26,0.4);
+    }
+
+    #btn-cat {
+      background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(161,140,209,0.4);
+    }
+
+    .answer-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+    /* ── Overlay ── */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    #overlay.show { display: flex; }
+
+    #overlay-box {
+      background: linear-gradient(160deg, #1e2a4a, #162032);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 40px 28px 32px;
+      text-align: center;
+      max-width: 340px;
+      width: 88%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    #overlay-emoji { font-size: 3.5rem; margin-bottom: 12px; }
+
+    #overlay-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    #overlay-reason {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 20px;
+    }
+
+    #overlay-score {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #ffd166;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    #overlay-score-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 28px;
+    }
+
+    #overlay-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #06d6a0, #118ab2);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      box-shadow: 0 6px 20px rgba(6,214,160,0.35);
+      transition: opacity 0.15s;
+    }
+
+    #overlay-btn:active { opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>🐾 犬か猫か</h1>
+    <div id="score-pill">スコア <span id="score">0</span></div>
+  </div>
+
+  <div id="timer-wrap">
+    <div id="timer-track"><div id="timer-bar"></div></div>
+    <div id="timer-label"><span id="timer-text">5.0</span>s</div>
+  </div>
+
+  <div id="card">
+    <img id="quiz-img" src="" alt="クイズ画像">
+  </div>
+
+  <div id="spacer"></div>
+
+  <div id="btn-area">
+    <button class="answer-btn" id="btn-dog" onclick="answer('dog')">🐶 犬</button>
+    <button class="answer-btn" id="btn-cat" onclick="answer('cat')">🐱 猫</button>
+  </div>
+
+  <!-- overlay -->
+  <div id="overlay">
+    <div id="overlay-box">
+      <div id="overlay-emoji"></div>
+      <div id="overlay-title"></div>
+      <div id="overlay-reason"></div>
+      <div id="overlay-score"></div>
+      <div id="overlay-score-label">正解数</div>
+      <button id="overlay-btn" onclick="restartGame()">もう一度遊ぶ</button>
+    </div>
+  </div>
+
+  <script>
+    const cats = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+      .map(n => ({ src: `images/cat/${n}.jpg`, label: 'cat' }));
+    const dogs = [
+      { src: 'images/dog/1.jpg',      label: 'dog' },
+      { src: 'images/dog/2.jpg',      label: 'dog' },
+      { src: 'images/dog/3.jpg',      label: 'dog' },
+      { src: 'images/dog/4.jpg',      label: 'dog' },
+      { src: 'images/dog/5.jpg',      label: 'dog' },
+      { src: 'images/dog/6.jpg',      label: 'dog' },
+      { src: 'images/dog/7.jpg',      label: 'dog' },
+      { src: 'images/dog/8.jpg',      label: 'dog' },
+      { src: 'images/dog/9.jpg',      label: 'dog' },
+      { src: 'images/dog/10.jpg',     label: 'dog' },
+      { src: 'images/dog/11.jpg',     label: 'dog' },
+      { src: 'images/dog/12.jpg',     label: 'dog' },
+      { src: 'images/dog/13.jpg',     label: 'dog' },
+      { src: 'images/dog/14jpg.jpeg', label: 'dog' },
+      { src: 'images/dog/15.jpg',     label: 'dog' },
+    ];
+
+    const allImages = [...cats, ...dogs];
+    let queue = [];
+    let currentImage = null;
+    let score = 0;
+
+    // Timer state
+    const BASE_TIME  = 5.0;   // seconds at start
+    const MIN_TIME   = 1.0;   // floor
+    const STEP       = 0.1;   // reduction per correct answer
+    let timeLimit    = BASE_TIME;
+    let timeLeft     = BASE_TIME;
+    let timerHandle  = null;
+    const TICK       = 50;    // ms
+
+    const timerBar   = document.getElementById('timer-bar');
+    const timerText  = document.getElementById('timer-text');
+    const buttons    = document.querySelectorAll('.answer-btn');
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startTimer() {
+      clearInterval(timerHandle);
+      timeLeft = timeLimit;
+      updateTimerUI();
+      timerHandle = setInterval(() => {
+        timeLeft -= TICK / 1000;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          updateTimerUI();
+          clearInterval(timerHandle);
+          setButtonsEnabled(false);
+          showGameOver('timeout');
+        } else {
+          updateTimerUI();
+        }
+      }, TICK);
+    }
+
+    function updateTimerUI() {
+      const ratio = timeLeft / timeLimit;
+      timerBar.style.width = (ratio * 100) + '%';
+      timerBar.classList.toggle('warn', ratio <= 0.4);
+      timerText.textContent = timeLeft.toFixed(1);
+    }
+
+    function loadNext() {
+      if (queue.length === 0) queue = shuffle([...allImages]);
+      currentImage = queue.pop();
+      document.getElementById('quiz-img').src = currentImage.src;
+      setButtonsEnabled(true);
+      startTimer();
+    }
+
+    function answer(choice) {
+      clearInterval(timerHandle);
+      setButtonsEnabled(false);
+      if (choice === currentImage.label) {
+        score++;
+        document.getElementById('score').textContent = score;
+        timeLimit = Math.max(MIN_TIME, BASE_TIME - score * STEP);
+        loadNext();
+      } else {
+        showGameOver('wrong');
+      }
+    }
+
+    function setButtonsEnabled(enabled) {
+      buttons.forEach(b => b.disabled = !enabled);
+    }
+
+    function showGameOver(reason) {
+      document.getElementById('overlay-emoji').textContent  = reason === 'timeout' ? '⏰' : '😿';
+      document.getElementById('overlay-title').textContent  = 'ゲームオーバー';
+      document.getElementById('overlay-reason').textContent = reason === 'timeout' ? '時間切れ！' : '不正解…';
+      document.getElementById('overlay-score').textContent  = score;
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function restartGame() {
+      score = 0;
+      timeLimit = BASE_TIME;
+      document.getElementById('score').textContent = 0;
+      document.getElementById('overlay').classList.remove('show');
+      queue = [];
+      loadNext();
+    }
+
+    loadNext();
+  </script>
+</body>
+</html>
